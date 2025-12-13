@@ -6,7 +6,7 @@ This project demonstrates a cloud-native data engineering pipeline built on **Am
 
 The objective of this project was to architect a scalable data pipeline that simulates real-time transaction processing. The system automatically generates synthetic sales records, stores them in a data lake, and provides immediate business intelligence insights through a custom dashboard.
 
-![Application Demo](<img src="img/demo-file.gif" width="100%">.)
+<img src="img/demo-file.gif" width="100%">
 
 ### Key Features
 * **Serverless Ingestion:** Uses AWS Lambda to generate and process data without provisioning servers.
