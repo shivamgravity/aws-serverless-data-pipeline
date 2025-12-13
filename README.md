@@ -36,7 +36,7 @@ Before running this project, ensure you have the following:
 
 ### 1. Clone the Repository
     ```bash
-    git clone <your-repo-url>
+    git clone https://github.com/shivamgravity/aws-serverless-data-pipeline
     cd aws-serverless-data-pipeline
     ```
 ### 2. Setup Virtual Environment
