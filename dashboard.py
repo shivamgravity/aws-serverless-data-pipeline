@@ -3,6 +3,8 @@ import boto3
 import json
 import pandas as pd
 from io import BytesIO
+import matplotlib.pyplot as plt
+import seaborn as sns
 import os
 from dotenv import load_dotenv
 
@@ -82,9 +84,31 @@ if raw_data:
         st.bar_chart(product_sales)
 
     with c2:
-        st.subheader("Recent Transactions")
-        # Data Table
-        st.dataframe(df[['order_id', 'product', 'price', 'date']].sort_values(by='date', ascending=False), use_container_width=True)
+        st.subheader("Product Distribution")
+        # Pie Chart using Matplotlib
+        fig1, ax1 = plt.subplots()
+        product_counts = df['product'].value_counts()
+        ax1.pie(product_counts, labels=product_counts.index, autopct='%1.1f%%', startangle=90)
+        ax1.axis('equal')  
+        st.pyplot(fig1)
+
+    st.divider()
+
+    # Line Chart
+    st.subheader("Revenue Trends")
+    if 'date' in df.columns:
+        df['date'] = pd.to_datetime(df['date'])
+        # Group by minute or hour to show trends if all data is from today
+        daily_revenue = df.groupby(df['date'].dt.strftime('%H:%M:%S'))['price'].sum()
+        st.line_chart(daily_revenue)
+    else:
+        st.warning("Date column missing for trend analysis.")
+
+    st.divider()
+
+    # Data Table
+    st.subheader("Recent Transactions")
+    st.dataframe(df.sort_values(by='date', ascending=False), use_container_width=True)
 
 else:
     st.warning("No data found in the bucket. Run your Lambda function to generate data!")
