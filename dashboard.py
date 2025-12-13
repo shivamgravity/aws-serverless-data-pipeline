@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# --- Configuration ---
+BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
+
 # --- AWS Connection ---
 @st.cache_resource
 def get_s3_client():
