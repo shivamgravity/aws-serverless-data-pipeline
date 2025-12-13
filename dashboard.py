@@ -3,15 +3,21 @@ import boto3
 import json
 import pandas as pd
 from io import BytesIO
+import os
+from dotenv import load_dotenv
 
-# --- Configuration ---
-BUCKET_NAME = 'blackcoffer-task-10-data-shivam'
-AWS_REGION = 'ap-southeast-2'
+# Load environment variables from .env file
+load_dotenv()
 
 # --- AWS Connection ---
 @st.cache_resource
 def get_s3_client():
-    return boto3.client('s3', region_name=AWS_REGION)
+    return boto3.client(
+        's3',
+        region_name=os.getenv('AWS_DEFAULT_REGION'),
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+    )
 
 # --- Fetch Data Logic ---
 def load_data():
