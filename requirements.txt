@@ -3,7 +3,4 @@ boto3
 dotenv
 matplotlib
 seaborn
-json
 pandas
-os
-io
