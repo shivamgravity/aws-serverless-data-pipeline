@@ -8,7 +8,7 @@
 **A cloud-native, serverless ETL pipeline that automates real-time sales data generation, ingestion, and visualization.**
 
 ### 🔴 Live Demo
-**[Click here to view the Live Dashboard](https://share.streamlit.io/shivamgravity/aws-serverless-data-pipeline)**
+**[Click here to view the Live Dashboard](https://aws-serverless-data-pipeline.streamlit.app)**
 
 *(Note: If the app is asleep, please allow 30-60 seconds for the container to wake up.)*
 
