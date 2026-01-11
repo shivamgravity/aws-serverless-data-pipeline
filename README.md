@@ -9,6 +9,7 @@
 
 ### 🔴 Live Demo
 **[Click here to view the Live Dashboard](https://share.streamlit.io/shivamgravity/aws-serverless-data-pipeline)**
+
 *(Note: If the app is asleep, please allow 30-60 seconds for the container to wake up.)*
 
 ---
