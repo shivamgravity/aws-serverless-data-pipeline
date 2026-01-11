@@ -2,7 +2,6 @@ import streamlit as st
 import boto3
 import json
 import pandas as pd
-from io import BytesIO
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -12,26 +11,54 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Configuration ---
-BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
+def get_aws_credentials():
+    """
+    Fetch AWS credentials from Streamlit Secrets (Cloud) OR Environment Variables (Local).
+    """
+    # 1. Try Streamlit Cloud Secrets
+    try:
+        # Check if secrets are available
+        if "AWS_ACCESS_KEY_ID" in st.secrets:
+            return {
+                "access_key": st.secrets["AWS_ACCESS_KEY_ID"],
+                "secret_key": st.secrets["AWS_SECRET_ACCESS_KEY"],
+                "region": st.secrets["AWS_DEFAULT_REGION"],
+                "bucket": st.secrets["AWS_S3_BUCKET_NAME"]
+            }
+    except (FileNotFoundError, AttributeError):
+        pass # Not running on Streamlit Cloud or secrets.toml missing
 
-# --- AWS Connection ---
-@st.cache_resource
-def get_s3_client():
-    return boto3.client(
-        's3',
-        region_name=os.getenv('AWS_DEFAULT_REGION'),
-        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
-    )
+    # 2. Fallback to Local Environment Variables (loaded via dotenv)
+    return {
+        "access_key": os.getenv("AWS_ACCESS_KEY_ID"),
+        "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+        "region": os.getenv("AWS_DEFAULT_REGION", "ap-south-1"),
+        "bucket": os.getenv("AWS_S3_BUCKET_NAME")
+    }
+
+# Load and Validate
+creds = get_aws_credentials()
+
+if not creds["access_key"]:
+    st.error("🚨 AWS Credentials not found! Please set up your .env file locally or configure Secrets on Streamlit Cloud.")
+    st.stop()
+
+# Initialize Client
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=creds["access_key"],
+    aws_secret_access_key=creds["secret_key"],
+    region_name=creds["region"]
+)
 
 # --- Fetch Data Logic ---
 def load_data():
-    s3 = get_s3_client()
+
     data = []
     
     try:
         # List objects in the bucket
-        response = s3.list_objects_v2(Bucket=BUCKET_NAME)
+        response = s3.list_objects_v2(Bucket=creds["bucket"])
         
         if 'Contents' not in response:
             return []
@@ -40,7 +67,7 @@ def load_data():
         for obj in response['Contents']:
             file_key = obj['Key']
             if file_key.endswith('.json'):
-                file_obj = s3.get_object(Bucket=BUCKET_NAME, Key=file_key)
+                file_obj = s3.get_object(Bucket=creds["bucket"], Key=file_key)
                 file_content = file_obj['Body'].read().decode('utf-8')
                 json_content = json.loads(file_content)
                 data.append(json_content)
@@ -55,7 +82,7 @@ def load_data():
 st.set_page_config(page_title="Serverless Sales Dashboard", layout="wide")
 
 st.title("☁️ Serverless Data Pipeline Dashboard")
-st.markdown(f"**Data Source:** AWS S3 Bucket (`{BUCKET_NAME}`)")
+st.markdown(f"**Data Source:** AWS S3 Bucket (`{creds["bucket"]}`)")
 
 if st.button("🔄 Refresh Data"):
     st.cache_data.clear()
