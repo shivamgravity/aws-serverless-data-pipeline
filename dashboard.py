@@ -82,7 +82,7 @@ def load_data():
 st.set_page_config(page_title="Serverless Sales Dashboard", layout="wide")
 
 st.title("☁️ Serverless Data Pipeline Dashboard")
-st.markdown(f"**Data Source:** AWS S3 Bucket (`{creds["bucket"]}`)")
+st.markdown(f"**Data Source:** AWS S3 Bucket")
 
 if st.button("🔄 Refresh Data"):
     st.cache_data.clear()
