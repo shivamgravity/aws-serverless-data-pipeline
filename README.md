@@ -1,6 +1,17 @@
 # AWS Serverless Data Pipeline & Analytics Dashboard
 
-This project demonstrates a cloud-native data engineering pipeline built on **Amazon Web Services (AWS)**. It automates the generation, ingestion, and visualization of sales data using a serverless architecture.
+![AWS](https://img.shields.io/badge/AWS-Serverless-orange)
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-Live-FF4B4B)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+**A cloud-native, serverless ETL pipeline that automates real-time sales data generation, ingestion, and visualization.**
+
+### 🔴 Live Demo
+**[Click here to view the Live Dashboard](https://share.streamlit.io/shivamgravity/aws-serverless-data-pipeline)**
+*(Note: If the app is asleep, please allow 30-60 seconds for the container to wake up.)*
+
+---
 
 ## 🚀 Project Overview
 
@@ -9,18 +20,30 @@ The objective of this project was to architect a scalable data pipeline that sim
 <img src="img/demo-file.gif" width="100%">
 
 ### Key Features
-* **Serverless Ingestion:** Uses AWS Lambda to generate and process data without provisioning servers.
-* **Scalable Storage:** Leverages Amazon S3 as a durable Data Lake for JSON documents.
-* **Custom Visualization:** Features a purpose-built **Streamlit** dashboard for real-time analytics (chosen as a flexible, code-first alternative to AWS QuickSight).
-* **Infrastructure as Code:** Python `boto3` is used for programmatic interaction with AWS services.
+* **Fully Automated:** No manual intervention required. Data is generated and ingested automatically via **Amazon EventBridge** triggers.
+* **Serverless Ingestion:** Uses **AWS Lambda** to generate and process data without provisioning servers.
+* **Scalable Storage:** Leverages **Amazon S3** as a durable Data Lake for JSON documents.
+* **Real-Time Analytics:** Features a cloud-deployed **Streamlit** dashboard for instant KPI visualization.
+* **Infrastructure as Code:** Uses Python `boto3` for programmatic interaction with AWS services.
 
 ---
 
 ## 🏗️ Architecture
 
-1.  **Data Generator (AWS Lambda):** A Python function (`GenerateSalesData`) creates simulated e-commerce transactions (Product, Price, Timestamp) and creates a JSON object.
-2.  **Data Lake (Amazon S3):** These objects are stored in a dedicated S3 bucket (`blackcoffer-task-10-data-shivam`) for persistence.
-3.  **Analytics Engine (Streamlit):** A local Python application connects to S3 via the `boto3` SDK, ingests the raw JSON files, processes them into a Pandas DataFrame, and renders interactive charts.
+This project moves away from traditional server-based architectures to a fully **Event-Driven Serverless** model.
+
+```mermaid
+graph LR
+    A[EventBridge Scheduler] -- Trigger (Every 5 min) --> B[AWS Lambda]
+    B -- Generate & Load JSON --> C[Amazon S3 Data Lake]
+    C -- Fetch Data --> D[Streamlit Dashboard]
+    D -- Visualize --> E[End User]
+```
+
+1. **Orchestration (Amazon EventBridge):** Acts as the cron scheduler, triggering the data generation event every 5 minutes to simulate a live production environment.
+2. **Computer (AWS Lambda):** A Python-based serverless function that generates synthetic transaction records (Sales, Quantity, Product Category).
+3. **Storage (Amazon S3):** Acts as a durable Data Lake, storing raw JSON ingestion files.
+4. **Visualization (Streamlit):** A cloud-deployed Python application that ingests data from S3, performs transformation (Pandas), and renders real-time KPIs.
 
 ---
 
@@ -59,35 +82,37 @@ pip install -r requirements.txt
 *(Dependencies include: streamlit, boto3, pandas, matplotlib, seaborn, python-dotenv)*
 
 ### 4. Configure AWS Credentials
-To allow the local dashboard to read from S3, you must configure your AWS credentials.
-Create a `.env` file in the root directory:
+To allow the local dashboard to read from S3, rename the template file and add your keys:
+1. Rename `.env.example` to `.env` or create a new `.env` file.
+2. Add your credentials:
 ```bash
 AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
 AWS_DEFAULT_REGION=your_s3_bucket_region
 AWS_S3_BUCKET_NAME=your_s3_bucket_name
 ```
-## How to Run
-### Step 1: Generate Data (Cloud Side)
-* Log in to the **AWS Console.**
-* Navigate to **Lambda** > Functions > `GenerateSalesData`.
-* Click the **Test** button multiple times.
-* *Verification:* Go to your **S3 Bucket** and confirm that new `.json` files have appeared.
+*(Note: For Cloud deployment, use Streamlit Secrets instead of .env)*
 
-### Step 2: Launch Dashboard (Local Side)
+## How to Run
+### Step 1: Data Generation (Automated)
+The pipeline is automated via **Amazon EventBridge**.
+* Navigate to **AWS Lambda** > Functions > `GenerateSalesData`.
+* Verify that the EventBridge trigger is active (e.g., set to run every 5 minutes).
+* *Verification*: Check your **S3 Bucket** to see new `.json` files appearing automatically.
+
+### Step 2: Launch Dashboard
+**Option A: Run Locally** Run the streamlit application from your terminal:
 Run the streamlit application from your terminal:
 ```bash
 streamlit run dashboard.py
 ```
+The dashboard will open at `http://localhost:8501`.
 
-### Step 3: View Analytics
-* The dashboard will open automatically in your browser at `http://localhost:8501`.
-* Click the **"🔄 Refresh Data"** button to pull the latest records from S3.
-* Explore the **KPI Cards, Sales Charts,** and **Transaction Tables.**
+**Option B: Create Live Cloud Deployment** on <u>streamlit cloud</u>.
 
 ## Source Code Guide
 * `lambda_function.py`: The logic deployed to AWS Lambda. It uses the `random` library to simulate sales and `boto3` to write to S3.
-* `dashboard.py`: The main application file. It handles the S3 connection, data parsing, and UI rendering using Streamlit and Matplotlib.
+* `dashboard.py`: The main application file. It handles the S3 connection, data parsing, and UI rendering using Streamlit and Matplotlib. It automatically detects if it is running locally or on the cloud.
 * `requirements.txt`: List of Python libraries required to run the dashboard.
 
 ## Troubleshooting
@@ -95,7 +120,7 @@ streamlit run dashboard.py
 * **"Access Denied" Error:** This usually means your local AWS credentials are missing or incorrect. Re-run `aws configure` or check your `.env` file.
 * **"Module Not Found":** Ensure you activated your virtual environment before running `streamlit run`.
 
-## Future Improvements
-* **Automation:** Set up an Amazon EventBridge (CloudWatch Events) rule to trigger the Lambda function automatically every minute.
-* **Database:** For higher scale, write data to Amazon DynamoDB instead of raw S3 files.
-* **Hosting:** Deploy the Streamlit dashboard to AWS EC2 or Fargate so it runs permanently in the cloud.
+## Future Roadmap
+* **Integration:** Add AWS Glue for schema inference and cataloging.
+* **Querying:** Implement Amazon Athena to run SQL queries directly on S3 JSON data.
+* **Alerting:** Configure SNS (Simple Notification Service) to alert on unusually high-value transactions.
